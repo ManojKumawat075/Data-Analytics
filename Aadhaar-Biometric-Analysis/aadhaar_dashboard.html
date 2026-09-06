@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aadhaar Biometric Authentication — Analytical Bulletin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.32.0/plotly.min.js"></script>
+<style>
+  :root{
+    --ink:#0F1B2D;
+    --ink-2:#16263D;
+    --paper:#F7F1E4;
+    --paper-2:#EFE7D4;
+    --seal:#9C3B2E;
+    --amber:#D98E3F;
+    --teal:#2F7566;
+    --text:#1C2430;
+    --text-soft:#5B6472;
+    --line: rgba(15,27,45,0.14);
+    --line-paper: rgba(15,27,45,0.10);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--amber); color:var(--ink);}
+
+  /* ---------- watermark fingerprint pattern ---------- */
+  .fp-watermark{
+    position:absolute; inset:0; pointer-events:none;
+    background-image: radial-gradient(circle at 85% 30%, rgba(217,142,63,0.10) 0, transparent 42%),
+                       radial-gradient(circle at 10% 80%, rgba(156,59,46,0.12) 0, transparent 40%);
+  }
+
+  header.masthead{
+    position:relative;
+    background:
+      linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+    color:var(--paper);
+    padding:52px 6vw 34px;
+    overflow:hidden;
+    border-bottom:3px solid var(--amber);
+  }
+  header.masthead::after{
+    content:"";
+    position:absolute; right:-60px; top:-60px; width:340px; height:340px;
+    border-radius:50%;
+    border:1px dashed rgba(247,241,228,0.15);
+  }
+  .masthead-inner{position:relative; z-index:2; max-width:1180px; margin:0 auto;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--amber); display:flex; align-items:center; gap:10px; margin-bottom:18px;
+  }
+  .eyebrow .seal{
+    width:22px;height:22px;border-radius:50%;border:1.5px solid var(--amber);
+    display:flex;align-items:center;justify-content:center;
+  }
+  h1.title{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(32px, 4.4vw, 54px);
+    line-height:1.05;
+    margin:0 0 14px;
+    max-width:820px;
+  }
+  .subtitle{
+    font-size:16px; color:rgba(247,241,228,0.72); max-width:640px; line-height:1.55;
+  }
+  .masthead-meta{
+    display:flex; gap:36px; margin-top:34px; flex-wrap:wrap;
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:rgba(247,241,228,0.55);
+  }
+  .masthead-meta div span{display:block; color:var(--paper); font-size:14px; margin-top:4px;}
+
+  /* ---------- tab nav ---------- */
+  nav.tabs{
+    position:sticky; top:0; z-index:50;
+    background:var(--ink-2);
+    border-bottom:1px solid rgba(247,241,228,0.12);
+    display:flex; overflow-x:auto;
+    padding:0 6vw;
+  }
+  nav.tabs::-webkit-scrollbar{height:0;}
+  nav.tabs button{
+    flex:0 0 auto;
+    background:none; border:none; cursor:pointer;
+    color:rgba(247,241,228,0.55);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; letter-spacing:.04em;
+    padding:16px 18px;
+    border-bottom:2px solid transparent;
+    white-space:nowrap;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  nav.tabs button .num{color:var(--amber); margin-right:8px;}
+  nav.tabs button:hover{color:var(--paper);}
+  nav.tabs button.active{color:var(--paper); border-bottom-color:var(--amber);}
+
+  main{background:var(--paper); min-height:100vh;}
+  section.panel{
+    display:none;
+    max-width:1180px; margin:0 auto;
+    padding:52px 6vw 70px;
+  }
+  section.panel.active{display:block; animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .section-head{margin-bottom:30px;}
+  .section-head .kicker{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--seal); margin-bottom:8px; display:block;
+  }
+  .section-head h2{
+    font-family:'Fraunces', serif; font-weight:600; font-size:30px; margin:0 0 8px;
+    color:var(--ink);
+  }
+  .section-head p{color:var(--text-soft); max-width:720px; line-height:1.6; margin:0; font-size:15px;}
+
+  /* stat cards */
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(210px,1fr)); gap:16px; margin-bottom:36px;}
+  .stat-card{
+    background:#fff; border:1px solid var(--line-paper); border-radius:4px;
+    padding:20px 20px 18px; position:relative; overflow:hidden;
+  }
+  .stat-card::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--amber);
+  }
+  .stat-card.seal::before{background:var(--seal);}
+  .stat-card.teal::before{background:var(--teal);}
+  .stat-card .label{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-soft); font-family:'IBM Plex Mono',monospace;}
+  .stat-card .value{font-family:'Fraunces', serif; font-size:30px; font-weight:600; margin:8px 0 4px; color:var(--ink);}
+  .stat-card .foot{font-size:12.5px; color:var(--text-soft);}
+
+  /* finding list */
+  .exhibit{
+    background:#fff; border:1px solid var(--line-paper); border-radius:6px;
+    padding:26px 28px; margin-bottom:22px;
+  }
+  .exhibit h3{
+    font-family:'Fraunces', serif; font-size:19px; margin:0 0 14px; color:var(--ink);
+    display:flex; align-items:center; gap:10px;
+  }
+  .exhibit h3 .tag{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; background:var(--ink); color:var(--paper);
+    padding:3px 8px; border-radius:3px; letter-spacing:.06em;
+  }
+  .finding-list{list-style:none; margin:0; padding:0;}
+  .finding-list li{
+    display:flex; gap:14px; padding:13px 0; border-bottom:1px solid var(--line-paper); font-size:14.5px; line-height:1.55;
+  }
+  .finding-list li:last-child{border-bottom:none;}
+  .finding-list .stamp{
+    flex:0 0 auto; width:26px; height:26px; border-radius:50%; border:1.5px solid var(--seal); color:var(--seal);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+  }
+
+  .chart-box{background:#fff; border:1px solid var(--line-paper); border-radius:6px; padding:18px 8px 8px; margin-bottom:24px;}
+  .chart-box .chart-title{font-family:'IBM Plex Mono',monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-soft); padding:0 16px 10px;}
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+  @media(max-width:820px){.two-col{grid-template-columns:1fr;}}
+
+  table.data-table{width:100%; border-collapse:collapse; font-size:13px;}
+  table.data-table th{
+    text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--text-soft); border-bottom:2px solid var(--ink); padding:8px 10px;
+  }
+  table.data-table td{padding:8px 10px; border-bottom:1px solid var(--line-paper);}
+  table.data-table tr:hover td{background:var(--paper-2);}
+  .badge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:2px 7px; border-radius:3px;}
+  .badge.gap{background:rgba(156,59,46,0.12); color:var(--seal);}
+  .badge.drop{background:rgba(217,142,63,0.15); color:#8a5a1c;}
+  .badge.new{background:rgba(47,117,102,0.12); color:var(--teal);}
+
+  .pill-row{display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 4px;}
+  .pill{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:6px 12px; border-radius:20px;
+    border:1px solid var(--line); color:var(--text-soft); cursor:pointer; background:#fff;
+  }
+  .pill.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+
+  .rec-grid{display:grid; grid-template-columns:1fr; gap:14px;}
+  .rec-card{
+    background:#fff; border:1px solid var(--line-paper); border-radius:6px; padding:20px 22px;
+    display:flex; gap:18px; align-items:flex-start;
+  }
+  .rec-card .idx{
+    font-family:'Fraunces',serif; font-size:26px; color:var(--amber); font-weight:600; flex:0 0 auto;
+    min-width:34px;
+  }
+  .rec-card p{margin:0; font-size:14.5px; line-height:1.6;}
+
+  .limit-list{padding-left:0; list-style:none; margin:0;}
+  .limit-list li{
+    font-size:14px; line-height:1.6; padding:12px 16px; border-left:3px solid var(--seal);
+    background:#fff; margin-bottom:10px; color:var(--text-soft);
+  }
+
+  footer{
+    background:var(--ink); color:rgba(247,241,228,0.55);
+    padding:26px 6vw; font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  }
+  a.dl-link{color:var(--amber); text-decoration:none; border-bottom:1px dotted var(--amber);}
+
+  .note-box{
+    background:var(--paper-2); border:1px dashed var(--seal); border-radius:6px; padding:16px 18px;
+    font-size:13.5px; color:var(--text-soft); line-height:1.6; margin-bottom:28px;
+  }
+  .note-box b{color:var(--seal);}
+
+  @media (max-width:600px){
+    section.panel{padding:36px 5vw 50px;}
+    .masthead-meta{gap:20px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="fp-watermark"></div>
+  <div class="masthead-inner">
+    <div class="eyebrow">
+      <span class="seal">◈</span> UIDAI DATA INTELLIGENCE · ANALYTICAL BULLETIN No. 01
+    </div>
+    <h1 class="title">Aadhaar Biometric Authentication — Trend, Anomaly &amp; Predictive Analysis</h1>
+    <p class="subtitle">A district-and-pincode-level study of biometric authentication activity across India — where usage concentrates, why it diverges from population, what's coming next, and what UIDAI can do about it.</p>
+    <div class="masthead-meta" id="mastheadMeta"></div>
+  </div>
+</header>
+
+<nav class="tabs" id="tabNav"></nav>
+
+<main id="panels"></main>
+
+<footer>
+  <span>Aadhaar Biometric Authentication Analysis · Compiled from modeled transaction data + real Census 2011 references</span>
+  <span>Prepared for UIDAI Hackathon Submission</span>
+</footer>
+
+<script>
+const DATA = {"cleaning_summary": {"raw_rows": 12913, "duplicates_removed": 25, "nulls_removed": 48, "invalid_state_rows_removed": 41, "final_rows": 12799, "states_unique": 36, "districts_unique": 121, "pincodes_unique": 522}, "monthly_trend": {"dates": ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12"], "bio_age_5_17": [11981.0, 12173.0, 14425.0, 19644.0, 19152.0, 19498.0, 14307.0, 14468.0, 14452.0, 16779.0, 16045.0, 16334.0, 13056.0, 13890.0, 15774.0, 21399.0, 21712.0, 21241.0, 15971.0, 15837.0, 15970.0, 18464.0, 17672.0, 17939.0], "bio_age_17_": [21051.0, 20782.0, 24357.0, 33496.0, 32668.0, 33182.0, 24702.0, 25100.0, 24770.0, 28264.0, 28572.0, 28355.0, 22869.0, 23439.0, 27163.0, 36740.0, 37352.0, 36971.0, 27101.0, 27543.0, 27661.0, 31666.0, 32479.0, 31334.0], "total": [33032.0, 32955.0, 38782.0, 53140.0, 51820.0, 52680.0, 39009.0, 39568.0, 39222.0, 45043.0, 44617.0, 44689.0, 35925.0, 37329.0, 42937.0, 58139.0, 59064.0, 58212.0, 43072.0, 43380.0, 43631.0, 50130.0, 50151.0, 49273.0]}, "state_age": [{"state": "uttar pradesh", "bio_age_5_17": 40691.0, "bio_age_17_": 85934.0, "total": 126625.0}, {"state": "madhya pradesh", "bio_age_5_17": 30942.0, "bio_age_17_": 60948.0, "total": 91890.0}, {"state": "tamil nadu", "bio_age_5_17": 34651.0, "bio_age_17_": 43878.0, "total": 78529.0}, {"state": "maharashtra", "bio_age_5_17": 31054.0, "bio_age_17_": 45918.0, "total": 76972.0}, {"state": "bihar", "bio_age_5_17": 17785.0, "bio_age_17_": 42966.0, "total": 60751.0}, {"state": "rajasthan", "bio_age_5_17": 18543.0, "bio_age_17_": 40582.0, "total": 59125.0}, {"state": "west bengal", "bio_age_5_17": 21737.0, "bio_age_17_": 37211.0, "total": 58948.0}, {"state": "karnataka", "bio_age_5_17": 23799.0, "bio_age_17_": 33307.0, "total": 57106.0}, {"state": "andhra pradesh", "bio_age_5_17": 19395.0, "bio_age_17_": 33397.0, "total": 52792.0}, {"state": "assam", "bio_age_5_17": 15393.0, "bio_age_17_": 29246.0, "total": 44639.0}, {"state": "gujarat", "bio_age_5_17": 16928.0, "bio_age_17_": 27683.0, "total": 44611.0}, {"state": "odisha", "bio_age_5_17": 14240.0, "bio_age_17_": 26155.0, "total": 40395.0}, {"state": "jharkhand", "bio_age_5_17": 10784.0, "bio_age_17_": 23400.0, "total": 34184.0}, {"state": "kerala", "bio_age_5_17": 17000.0, "bio_age_17_": 15466.0, "total": 32466.0}, {"state": "haryana", "bio_age_5_17": 11604.0, "bio_age_17_": 19799.0, "total": 31403.0}, {"state": "chhattisgarh", "bio_age_5_17": 10275.0, "bio_age_17_": 20398.0, "total": 30673.0}, {"state": "punjab", "bio_age_5_17": 11177.0, "bio_age_17_": 19221.0, "total": 30398.0}, {"state": "telangana", "bio_age_5_17": 10306.0, "bio_age_17_": 17754.0, "total": 28060.0}, {"state": "delhi", "bio_age_5_17": 9873.0, "bio_age_17_": 13645.0, "total": 23518.0}, {"state": "uttarakhand", "bio_age_5_17": 6844.0, "bio_age_17_": 10650.0, "total": 17494.0}, {"state": "jammu and kashmir", "bio_age_5_17": 4198.0, "bio_age_17_": 8876.0, "total": 13074.0}, {"state": "tripura", "bio_age_5_17": 4855.0, "bio_age_17_": 6145.0, "total": 11000.0}, {"state": "himachal pradesh", "bio_age_5_17": 4172.0, "bio_age_17_": 6193.0, "total": 10365.0}, {"state": "meghalaya", "bio_age_5_17": 2421.0, "bio_age_17_": 4396.0, "total": 6817.0}, {"state": "manipur", "bio_age_5_17": 2402.0, "bio_age_17_": 4165.0, "total": 6567.0}, {"state": "nagaland", "bio_age_5_17": 2421.0, "bio_age_17_": 3922.0, "total": 6343.0}, {"state": "mizoram", "bio_age_5_17": 1147.0, "bio_age_17_": 1420.0, "total": 2567.0}, {"state": "chandigarh", "bio_age_5_17": 895.0, "bio_age_17_": 1247.0, "total": 2142.0}, {"state": "puducherry", "bio_age_5_17": 763.0, "bio_age_17_": 871.0, "total": 1634.0}, {"state": "goa", "bio_age_5_17": 531.0, "bio_age_17_": 735.0, "total": 1266.0}, {"state": "andaman and nicobar", "bio_age_5_17": 365.0, "bio_age_17_": 427.0, "total": 792.0}, {"state": "dadra and nagar haveli and daman and diu", "bio_age_5_17": 299.0, "bio_age_17_": 433.0, "total": 732.0}, {"state": "sikkim", "bio_age_5_17": 283.0, "bio_age_17_": 434.0, "total": 717.0}, {"state": "arunachal pradesh", "bio_age_5_17": 181.0, "bio_age_17_": 400.0, "total": 581.0}, {"state": "ladakh", "bio_age_5_17": 136.0, "bio_age_17_": 298.0, "total": 434.0}, {"state": "lakshadweep", "bio_age_5_17": 93.0, "bio_age_17_": 97.0, "total": 190.0}], "region_age": [{"india_region": "Central", "bio_age_5_17": 41217.0, "bio_age_17_": 81346.0}, {"india_region": "East", "bio_age_5_17": 64546.0, "bio_age_17_": 129732.0}, {"india_region": "North", "bio_age_5_17": 108133.0, "bio_age_17_": 206445.0}, {"india_region": "Northeast", "bio_age_5_17": 29103.0, "bio_age_17_": 50128.0}, {"india_region": "South", "bio_age_5_17": 106372.0, "bio_age_17_": 145197.0}, {"india_region": "West", "bio_age_5_17": 48812.0, "bio_age_17_": 74769.0}], "region_type_age": [{"region_type": "State", "bio_age_5_17": 381561.0, "bio_age_17_": 661723.0}, {"region_type": "Union Territory", "bio_age_5_17": 16622.0, "bio_age_17_": 25894.0}], "child_share_by_region": {"South": 40.99, "West": 36.52, "Northeast": 36.4, "North": 34.23, "Central": 33.69, "East": 31.26}, "top20_district_share": 47.44, "top20_pincode_share": 21.65, "top_districts": [{"state": "madhya pradesh", "district": "Indore", "total_biometric": 55839.0}, {"state": "uttar pradesh", "district": "Lucknow", "total_biometric": 41963.0}, {"state": "andhra pradesh", "district": "Visakhapatnam", "total_biometric": 36927.0}, {"state": "uttar pradesh", "district": "Meerut", "total_biometric": 34342.0}, {"state": "west bengal", "district": "Malda", "total_biometric": 29538.0}, {"state": "karnataka", "district": "Bengaluru Urban", "total_biometric": 26934.0}, {"state": "chhattisgarh", "district": "Raipur", "total_biometric": 25136.0}, {"state": "rajasthan", "district": "Jaipur", "total_biometric": 24104.0}, {"state": "maharashtra", "district": "Nashik", "total_biometric": 23566.0}, {"state": "odisha", "district": "Khordha (Bhubaneswar)", "total_biometric": 23201.0}, {"state": "madhya pradesh", "district": "Ujjain", "total_biometric": 22424.0}, {"state": "bihar", "district": "Patna", "total_biometric": 21590.0}, {"state": "punjab", "district": "Ludhiana", "total_biometric": 20441.0}, {"state": "haryana", "district": "Gurugram", "total_biometric": 19328.0}, {"state": "tamil nadu", "district": "Coimbatore", "total_biometric": 18897.0}], "bottom_districts": [{"state": "himachal pradesh", "district": "Kangra", "total_biometric": 1370.0}, {"state": "uttarakhand", "district": "Nainital", "total_biometric": 1253.0}, {"state": "punjab", "district": "Jalandhar", "total_biometric": 1239.0}, {"state": "goa", "district": "North Goa", "total_biometric": 996.0}, {"state": "andaman and nicobar", "district": "South Andaman", "total_biometric": 792.0}, {"state": "chhattisgarh", "district": "Bastar", "total_biometric": 767.0}, {"state": "dadra and nagar haveli and daman and diu", "district": "Daman", "total_biometric": 732.0}, {"state": "sikkim", "district": "East Sikkim (Gangtok)", "total_biometric": 717.0}, {"state": "maharashtra", "district": "Nagpur", "total_biometric": 658.0}, {"state": "arunachal pradesh", "district": "Papum Pare (Itanagar)", "total_biometric": 581.0}, {"state": "delhi", "district": "South Delhi", "total_biometric": 528.0}, {"state": "telangana", "district": "Karimnagar", "total_biometric": 528.0}, {"state": "ladakh", "district": "Leh", "total_biometric": 434.0}, {"state": "goa", "district": "South Goa", "total_biometric": 270.0}, {"state": "lakshadweep", "district": "Kavaratti", "total_biometric": 190.0}], "pincode_variation": {"national_avg_cv": 0.688, "most_uneven": {"label": "Most uneven (concentration risk)", "state": "Rajasthan", "district": "Bikaner", "cv": 1.861, "pincodes": {"305540": 3169, "307550": 476, "307500": 164, "306530": 134, "303520": 24, "306510": 24}}, "most_even": {"label": "Most even (well distributed)", "state": "Himachal Pradesh", "district": "Shimla", "cv": 0.036}, "districts": [{"label": "High-usage", "state": "Madhya Pradesh", "district": "Indore", "cv": 0.523, "pincodes": {"454030": 21217, "451000": 19244, "454010": 8273, "451020": 7105}}, {"label": "Average-usage", "state": "Himachal Pradesh", "district": "Shimla", "cv": 0.036, "pincodes": {"172000": 1961, "178010": 1870, "174020": 1828}}, {"label": "Low-usage", "state": "Lakshadweep", "district": "Kavaratti", "cv": 0.989, "pincodes": {"687030": 118, "681010": 24, "682000": 24, "687020": 24}}]}, "anomaly_diagnosis": {"raw_top10": [{"state": "madhya pradesh", "district": "Indore", "total_biometric": 55839.0, "per_1000_pop": 4.26}, {"state": "uttar pradesh", "district": "Lucknow", "total_biometric": 41963.0, "per_1000_pop": 1.97}, {"state": "andhra pradesh", "district": "Visakhapatnam", "total_biometric": 36927.0, "per_1000_pop": 3.19}, {"state": "uttar pradesh", "district": "Meerut", "total_biometric": 34342.0, "per_1000_pop": 0.83}, {"state": "west bengal", "district": "Malda", "total_biometric": 29538.0, "per_1000_pop": 2.87}, {"state": "karnataka", "district": "Bengaluru Urban", "total_biometric": 26934.0, "per_1000_pop": 3.01}, {"state": "chhattisgarh", "district": "Raipur", "total_biometric": 25136.0, "per_1000_pop": 2.41}, {"state": "rajasthan", "district": "Jaipur", "total_biometric": 24104.0, "per_1000_pop": 1.32}, {"state": "maharashtra", "district": "Nashik", "total_biometric": 23566.0, "per_1000_pop": 1.94}, {"state": "odisha", "district": "Khordha (Bhubaneswar)", "total_biometric": 23201.0, "per_1000_pop": 4.53}], "raw_bottom10": [{"state": "lakshadweep", "district": "Kavaratti", "total_biometric": 190.0, "per_1000_pop": 2.95}, {"state": "goa", "district": "South Goa", "total_biometric": 270.0, "per_1000_pop": 0.58}, {"state": "ladakh", "district": "Leh", "total_biometric": 434.0, "per_1000_pop": 1.58}, {"state": "delhi", "district": "South Delhi", "total_biometric": 528.0, "per_1000_pop": 0.07}, {"state": "telangana", "district": "Karimnagar", "total_biometric": 528.0, "per_1000_pop": 0.07}, {"state": "arunachal pradesh", "district": "Papum Pare (Itanagar)", "total_biometric": 581.0, "per_1000_pop": 0.42}, {"state": "maharashtra", "district": "Nagpur", "total_biometric": 658.0, "per_1000_pop": 0.04}, {"state": "sikkim", "district": "East Sikkim (Gangtok)", "total_biometric": 717.0, "per_1000_pop": 1.17}, {"state": "dadra and nagar haveli and daman and diu", "district": "Daman", "total_biometric": 732.0, "per_1000_pop": 1.25}, {"state": "chhattisgarh", "district": "Bastar", "total_biometric": 767.0, "per_1000_pop": 0.15}], "percap_top10": [{"state": "punjab", "district": "Ludhiana", "total_biometric": 20441.0, "per_1000_pop": 7.77}, {"state": "madhya pradesh", "district": "Ujjain", "total_biometric": 22424.0, "per_1000_pop": 5.96}, {"state": "odisha", "district": "Khordha (Bhubaneswar)", "total_biometric": 23201.0, "per_1000_pop": 4.53}, {"state": "haryana", "district": "Gurugram", "total_biometric": 19328.0, "per_1000_pop": 4.33}, {"state": "madhya pradesh", "district": "Indore", "total_biometric": 55839.0, "per_1000_pop": 4.26}, {"state": "delhi", "district": "New Delhi", "total_biometric": 13226.0, "per_1000_pop": 4.16}, {"state": "maharashtra", "district": "Thane", "total_biometric": 13137.0, "per_1000_pop": 3.36}, {"state": "nagaland", "district": "Kohima", "total_biometric": 6343.0, "per_1000_pop": 3.21}, {"state": "andhra pradesh", "district": "Visakhapatnam", "total_biometric": 36927.0, "per_1000_pop": 3.19}, {"state": "himachal pradesh", "district": "Mandi", "total_biometric": 3336.0, "per_1000_pop": 3.1}], "percap_bottom10": [{"state": "maharashtra", "district": "Nagpur", "total_biometric": 658.0, "per_1000_pop": 0.04}, {"state": "madhya pradesh", "district": "Bhopal", "total_biometric": 1551.0, "per_1000_pop": 0.05}, {"state": "west bengal", "district": "Bardhaman", "total_biometric": 2056.0, "per_1000_pop": 0.07}, {"state": "telangana", "district": "Karimnagar", "total_biometric": 528.0, "per_1000_pop": 0.07}, {"state": "delhi", "district": "South Delhi", "total_biometric": 528.0, "per_1000_pop": 0.07}, {"state": "tamil nadu", "district": "Madurai", "total_biometric": 2531.0, "per_1000_pop": 0.12}, {"state": "uttar pradesh", "district": "Gorakhpur", "total_biometric": 4233.0, "per_1000_pop": 0.12}, {"state": "uttar pradesh", "district": "Prayagraj", "total_biometric": 3804.0, "per_1000_pop": 0.13}, {"state": "chhattisgarh", "district": "Bastar", "total_biometric": 767.0, "per_1000_pop": 0.15}, {"state": "odisha", "district": "Cuttack", "total_biometric": 2783.0, "per_1000_pop": 0.15}], "dropped_after_normalizing": ["Bengaluru Urban \u2014 Karnataka", "Nashik \u2014 Maharashtra", "Jaipur \u2014 Rajasthan", "Raipur \u2014 Chhattisgarh", "Meerut \u2014 Uttar Pradesh", "Malda \u2014 West Bengal", "Lucknow \u2014 Uttar Pradesh"], "newly_surfaced_after_normalizing": ["Thane \u2014 Maharashtra", "Kohima \u2014 Nagaland", "Ujjain \u2014 Madhya Pradesh", "Mandi \u2014 Himachal Pradesh", "Ludhiana \u2014 Punjab", "Gurugram \u2014 Haryana", "New Delhi \u2014 Delhi"], "persistent_access_gap_districts": ["South Delhi \u2014 Delhi", "Karimnagar \u2014 Telangana", "Bastar \u2014 Chhattisgarh", "Nagpur \u2014 Maharashtra"]}, "predictive_analysis": {"top5_state_forecasts": {"uttar pradesh": {"history_dates": ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12"], "history_values": [3906.0, 3997.0, 4413.0, 6193.0, 5876.0, 6282.0, 4251.0, 4671.0, 4641.0, 5211.0, 5215.0, 5259.0, 3949.0, 4319.0, 4904.0, 6642.0, 7158.0, 7091.0, 5166.0, 5089.0, 4703.0, 5851.0, 6140.0, 5698.0], "forecast_dates": ["2025-01", "2025-02", "2025-03"], "forecast_values": [5950.0, 6004.0, 6058.0], "monthly_growth_rate": 53.9, "trend": "rising"}, "madhya pradesh": {"history_dates": ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12"], "history_values": [2984.0, 2656.0, 3062.0, 4657.0, 4332.0, 4589.0, 3406.0, 3284.0, 3431.0, 3790.0, 3673.0, 3706.0, 3129.0, 3208.0, 3754.0, 4794.0, 5169.0, 5280.0, 3583.0, 3023.0, 3712.0, 4097.0, 4417.0, 4154.0], "forecast_dates": ["2025-01", "2025-02", "2025-03"], "forecast_values": [4262.0, 4297.0, 4331.0], "monthly_growth_rate": 34.7, "trend": "rising"}, "tamil nadu": {"history_dates": ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12"], "history_values": [2312.0, 2327.0, 2894.0, 3930.0, 3862.0, 3856.0, 2919.0, 2841.0, 2703.0, 3165.0, 3204.0, 3362.0, 2733.0, 2673.0, 3056.0, 4275.0, 3915.0, 4320.0, 3060.0, 3184.0, 2998.0, 3579.0, 3575.0, 3786.0], "forecast_dates": ["2025-01", "2025-02", "2025-03"], "forecast_values": [3653.0, 3683.0, 3714.0], "monthly_growth_rate": 30.5, "trend": "rising"}, "maharashtra": {"history_dates": ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12"], "history_values": [2367.0, 2364.0, 2747.0, 3770.0, 3783.0, 3598.0, 2836.0, 2731.0, 2744.0, 3232.0, 3244.0, 3052.0, 2628.0, 2510.0, 3290.0, 3826.0, 4293.0, 4027.0, 3213.0, 2984.0, 3147.0, 3562.0, 3526.0, 3498.0], "forecast_dates": ["2025-01", "2025-02", "2025-03"], "forecast_values": [3591.0, 3622.0, 3653.0], "monthly_growth_rate": 30.7, "trend": "rising"}, "bihar": {"history_dates": ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12"], "history_values": [2020.0, 2040.0, 2244.0, 2906.0, 3043.0, 2950.0, 2186.0, 2325.0, 1954.0, 2420.0, 2610.0, 2486.0, 1607.0, 2093.0, 2375.0, 3324.0, 3318.0, 3025.0, 2368.0, 2549.0, 2504.0, 2769.0, 2789.0, 2846.0], "forecast_dates": ["2025-01", "2025-02", "2025-03"], "forecast_values": [2792.0, 2813.0, 2834.0], "monthly_growth_rate": 20.9, "trend": "rising"}}, "national_forecast_holtwinters": {"history_dates": ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12"], "history_values": [33032.0, 32955.0, 38782.0, 53140.0, 51820.0, 52680.0, 39009.0, 39568.0, 39222.0, 45043.0, 44617.0, 44689.0, 35925.0, 37329.0, 42937.0, 58139.0, 59064.0, 58212.0, 43072.0, 43380.0, 43631.0, 50130.0, 50151.0, 49273.0], "forecast_dates": ["2025-01", "2025-02", "2025-03"], "forecast_values": [40476.0, 41132.0, 46847.0], "ci_upper": [41574.0, 42230.0, 47945.0], "ci_lower": [39378.0, 40034.0, 45749.0]}, "bottom5_district_trend": {"South Delhi \u2014 Delhi": {"monthly_growth_rate": 0.33, "direction": "recovering"}, "Karimnagar \u2014 Telangana": {"monthly_growth_rate": 0.26, "direction": "recovering"}, "Leh \u2014 Ladakh": {"monthly_growth_rate": 0.2, "direction": "recovering"}, "South Goa \u2014 Goa": {"monthly_growth_rate": 0.11, "direction": "recovering"}, "Kavaratti \u2014 Lakshadweep": {"monthly_growth_rate": 0.04, "direction": "recovering"}}, "child_reupdate_monthly_growth": 150.7}, "correlation": {"scatter": [{"state": "andaman and nicobar", "child_share_percent": 42.17, "literacy_rate_2011": 86.63}, {"state": "andhra pradesh", "child_share_percent": 34.43, "literacy_rate_2011": 67.35}, {"state": "arunachal pradesh", "child_share_percent": 31.4, "literacy_rate_2011": 65.38}, {"state": "assam", "child_share_percent": 33.65, "literacy_rate_2011": 72.19}, {"state": "bihar", "child_share_percent": 28.18, "literacy_rate_2011": 61.8}, {"state": "chandigarh", "child_share_percent": 42.16, "literacy_rate_2011": 86.05}, {"state": "chhattisgarh", "child_share_percent": 34.05, "literacy_rate_2011": 70.28}, {"state": "dadra and nagar haveli and daman and diu", "child_share_percent": 40.66, "literacy_rate_2011": 82.4}, {"state": "delhi", "child_share_percent": 42.21, "literacy_rate_2011": 86.21}, {"state": "goa", "child_share_percent": 26.04, "literacy_rate_2011": 88.7}, {"state": "gujarat", "child_share_percent": 38.42, "literacy_rate_2011": 78.03}, {"state": "haryana", "child_share_percent": 35.6, "literacy_rate_2011": 75.55}, {"state": "himachal pradesh", "child_share_percent": 40.35, "literacy_rate_2011": 82.8}, {"state": "jammu and kashmir", "child_share_percent": 32.23, "literacy_rate_2011": 67.16}, {"state": "jharkhand", "child_share_percent": 27.6, "literacy_rate_2011": 66.41}, {"state": "karnataka", "child_share_percent": 39.56, "literacy_rate_2011": 75.36}, {"state": "kerala", "child_share_percent": 51.9, "literacy_rate_2011": 93.91}, {"state": "ladakh", "child_share_percent": 21.98, "literacy_rate_2011": 71.0}, {"state": "lakshadweep", "child_share_percent": 46.35, "literacy_rate_2011": 91.85}, {"state": "madhya pradesh", "child_share_percent": 33.32, "literacy_rate_2011": 69.32}, {"state": "maharashtra", "child_share_percent": 37.13, "literacy_rate_2011": 82.34}, {"state": "manipur", "child_share_percent": 37.03, "literacy_rate_2011": 76.94}, {"state": "meghalaya", "child_share_percent": 35.38, "literacy_rate_2011": 74.43}, {"state": "mizoram", "child_share_percent": 44.59, "literacy_rate_2011": 91.58}, {"state": "nagaland", "child_share_percent": 38.19, "literacy_rate_2011": 79.55}, {"state": "odisha", "child_share_percent": 31.87, "literacy_rate_2011": 72.87}, {"state": "puducherry", "child_share_percent": 42.6, "literacy_rate_2011": 85.85}, {"state": "punjab", "child_share_percent": 36.82, "literacy_rate_2011": 75.84}, {"state": "rajasthan", "child_share_percent": 29.59, "literacy_rate_2011": 66.11}, {"state": "sikkim", "child_share_percent": 40.98, "literacy_rate_2011": 81.42}, {"state": "tamil nadu", "child_share_percent": 42.81, "literacy_rate_2011": 80.09}, {"state": "telangana", "child_share_percent": 34.71, "literacy_rate_2011": 66.46}, {"state": "tripura", "child_share_percent": 38.06, "literacy_rate_2011": 87.22}, {"state": "uttar pradesh", "child_share_percent": 32.36, "literacy_rate_2011": 67.68}, {"state": "uttarakhand", "child_share_percent": 29.48, "literacy_rate_2011": 78.82}, {"state": "west bengal", "child_share_percent": 35.36, "literacy_rate_2011": 76.26}], "pearson_r_literacy_vs_child_share": 0.725, "p_value": 0.0}, "key_findings": ["Top 20 districts account for 47.4% of all biometric transactions nationally \u2014 usage is heavily concentrated, not evenly spread.", "Adult (17+) transactions make up 63.3% of all activity; child (5-17) share is highest in the South region, tracking with its higher literacy/enrollment levels.", "Per-capita re-ranking changes the anomaly list: 7 of the 'top-10 raw' districts are population-driven, not genuinely high-intensity, once normalized.", "4 districts remain in the bottom 10 on BOTH raw and per-capita views \u2014 these indicate a genuine authentication access gap, not just a small population.", "Literacy rate correlates with child biometric share at r = 0.72 (p = 0.0000) \u2014 higher-literacy states show a measurably higher share of child (5-17) authentications, consistent with stronger school-linked update compliance.", "National transaction volume peaked in May 2024 and the Holt-Winters model projects the trend to continue declining over the next quarter.", "District-level pincode concentration (CV) peaks in Bikaner (Rajasthan) at 1.86 vs a national average of 0.69 \u2014 access there is concentrated in very few pincodes, while Shimla (Himachal Pradesh) is far more evenly spread (CV=0.04)."], "recommendations": ["Deploy mobile Aadhaar biometric-update camps in the 4 confirmed access-gap districts (South Delhi \u2014 Delhi, Karimnagar \u2014 Telangana, Bastar \u2014 Chhattisgarh...) \u2014 these are low on both raw and per-capita measures, ruling out 'just low population' as the explanation.", "Audit enrolment-center capacity in the pincodes driving Bikaner (Rajasthan)'s concentration (CV=1.86, vs a national average of 0.69) \u2014 one or two pincodes may be absorbing disproportionate load while nearby pincodes are underserved.", "Pre-allocate additional authentication server/kiosk capacity for Uttar Pradesh ahead of the next quarter \u2014 its linear trend shows a monthly growth rate of 54 transactions/month.", "Sync school-admission-cycle outreach (April-June) with the observed seasonal spike, since child biometric share and literacy are positively correlated \u2014 this window is when age-5/age-15 mandatory re-updates cluster.", "Re-run the top/bottom-10 anomaly rankings on a per-capita basis as standard practice going forward \u2014 raw counts alone systematically over-flag large-population districts and under-flag genuine small-district access gaps."], "limitations": ["District/pincode-level transaction volumes in this analysis are a modeled dataset calibrated to real Census 2011 state population and literacy figures \u2014 live UIDAI district/pincode monthly authentication files could not be retrieved inside this environment, so absolute counts are illustrative, not official UIDAI figures.", "Population denominators used for per-capita normalization are modeled proxies distributed from real state-level Census 2011 totals; district-level 2011 populations are not embedded here and would sharpen the per-capita ranking if substituted.", "Census 2011 is the latest full decadal census; both population and literacy inputs are 13+ years old and will not reflect subsequent demographic shifts.", "The forecasting models (linear trend, Holt-Winters) assume the historical pattern continues and do not account for policy changes, new enrolment drives, or infrastructure investments that could shift trends abruptly."]};
+
+const PLOTLY_FONT = {family:"Inter, sans-serif", color:"#1C2430", size:12};
+const COLORS = {amber:"#D98E3F", seal:"#9C3B2E", teal:"#2F7566", ink:"#0F1B2D", grid:"rgba(15,27,45,0.08)"};
+
+function baseLayout(extra){
+  return Object.assign({
+    font: PLOTLY_FONT,
+    paper_bgcolor:"#fff",
+    plot_bgcolor:"#fff",
+    margin:{t:10,l:50,r:20,b:50},
+    xaxis:{gridcolor:COLORS.grid, zeroline:false},
+    yaxis:{gridcolor:COLORS.grid, zeroline:false},
+    legend:{orientation:"h", y:-0.22, font:{size:11}},
+  }, extra||{});
+}
+const PLOTLY_CFG = {displayModeBar:false, responsive:true};
+
+/* ---------------- masthead meta stats ---------------- */
+document.getElementById("mastheadMeta").innerHTML = `
+  <div>RECORDS ANALYZED<span>${DATA.cleaning_summary.final_rows.toLocaleString()}</span></div>
+  <div>STATES / UTs<span>${DATA.cleaning_summary.states_unique}</span></div>
+  <div>DISTRICTS<span>${DATA.cleaning_summary.districts_unique}</span></div>
+  <div>PINCODES<span>${DATA.cleaning_summary.pincodes_unique}</span></div>
+`;
+
+/* ---------------- tabs & panels scaffold ---------------- */
+const SECTIONS = [
+  {id:"overview", label:"Overview"},
+  {id:"trends", label:"Trends"},
+  {id:"concentration", label:"Concentration"},
+  {id:"anomalies", label:"Anomalies"},
+  {id:"forecast", label:"Forecast"},
+  {id:"correlation", label:"Correlation"},
+  {id:"recommendations", label:"Recommendations"},
+  {id:"limitations", label:"Limitations"},
+];
+const tabNav = document.getElementById("tabNav");
+const panelsRoot = document.getElementById("panels");
+
+SECTIONS.forEach((s, i) => {
+  const btn = document.createElement("button");
+  btn.innerHTML = `<span class="num">${String(i+1).padStart(2,"0")}</span>${s.label}`;
+  btn.dataset.target = s.id;
+  btn.onclick = () => showPanel(s.id);
+  tabNav.appendChild(btn);
+
+  const panel = document.createElement("section");
+  panel.className = "panel";
+  panel.id = "panel-" + s.id;
+  panelsRoot.appendChild(panel);
+});
+
+function showPanel(id){
+  document.querySelectorAll("section.panel").forEach(p => p.classList.toggle("active", p.id === "panel-"+id));
+  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.dataset.target === id));
+  window.scrollTo({top:0, behavior:"smooth"});
+  renderPanel(id);
+}
+
+const rendered = {};
+function renderPanel(id){
+  if(rendered[id]) return;
+  rendered[id] = true;
+  RENDERERS[id]();
+}
+
+/* ================================================================
+   1. OVERVIEW
+   ================================================================ */
+function renderOverview(){
+  const el = document.getElementById("panel-overview");
+  const adultPct = ( DATA.state_age.reduce((a,s)=>a+s.bio_age_17_,0) / DATA.state_age.reduce((a,s)=>a+s.total,0) *100 ).toFixed(1);
+  el.innerHTML = `
+    <div class="section-head">
+      <span class="kicker">Exhibit 01 · Executive Summary</span>
+      <h2>What the data says, at a glance</h2>
+      <p>Seven headline findings drawn directly from the analysis — concentration, per-capita anomalies, seasonality, and the literacy correlation.</p>
+    </div>
+    <div class="note-box"><b>On the data:</b> transaction volumes are a modeled dataset built to mirror real UIDAI file structure; population &amp; literacy figures are genuine Census 2011 references. Full disclosure in the <em>Limitations</em> tab.</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="label">Top-20 District Share</div><div class="value">${DATA.top20_district_share}%</div><div class="foot">of all national transactions</div></div>
+      <div class="stat-card seal"><div class="label">Confirmed Access-Gap Districts</div><div class="value">${DATA.anomaly_diagnosis.persistent_access_gap_districts.length}</div><div class="foot">low on raw AND per-capita views</div></div>
+      <div class="stat-card teal"><div class="label">Literacy ↔ Child-Share Correlation</div><div class="value">r = ${DATA.correlation.pearson_r_literacy_vs_child_share}</div><div class="foot">p = ${DATA.correlation.p_value}</div></div>
+      <div class="stat-card"><div class="label">Adult (17+) Share</div><div class="value">${adultPct}%</div><div class="foot">of total biometric volume</div></div>
+    </div>
+    <div class="exhibit">
+      <h3><span class="tag">KEY FINDINGS</span></h3>
+      <ul class="finding-list">
+        ${DATA.key_findings.map((f,i)=>`<li><span class="stamp">${i+1}</span><span>${f}</span></li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
+
+/* ================================================================
+   2. TRENDS
+   ================================================================ */
+function renderTrends(){
+  const el = document.getElementById("panel-trends");
+  el.innerHTML = `
+    <div class="section-head">
+      <span class="kicker">Exhibit 02 · Trends &amp; Patterns</span>
+      <h2>How activity moves over time, geography and age group</h2>
+      <p>National seasonality, the state leaderboard, and the regional child-vs-adult split.</p>
+    </div>
+    <div class="chart-box"><div class="chart-title">National Monthly Volume — Child (5–17) vs Adult (17+)</div><div id="chartMonthly" style="height:340px;"></div></div>
+    <div class="two-col">
+      <div class="chart-box"><div class="chart-title">Top 12 States by Total Transactions</div><div id="chartStates" style="height:380px;"></div></div>
+      <div class="chart-box"><div class="chart-title">Region-wise Child Biometric Share (avg %)</div><div id="chartRegionChild" style="height:380px;"></div></div>
+    </div>
+  `;
+
+  Plotly.newPlot("chartMonthly", [
+    {x:DATA.monthly_trend.dates, y:DATA.monthly_trend.bio_age_5_17, name:"Child (5–17)", type:"scatter", mode:"lines", stackgroup:"one", line:{color:COLORS.amber}},
+    {x:DATA.monthly_trend.dates, y:DATA.monthly_trend.bio_age_17_, name:"Adult (17+)", type:"scatter", mode:"lines", stackgroup:"one", line:{color:COLORS.ink}},
+  ], baseLayout({}), PLOTLY_CFG);
+
+  const topStates = [...DATA.state_age].sort((a,b)=>b.total-a.total).slice(0,12);
+  Plotly.newPlot("chartStates", [{
+    x: topStates.map(s=>s.total), y: topStates.map(s=>s.state.replace(/\\b\\w/g, c=>c.toUpperCase())),
+    type:"bar", orientation:"h", marker:{color:COLORS.amber},
+  }], baseLayout({margin:{t:10,l:150,r:20,b:40}, yaxis:{autorange:"reversed"}}), PLOTLY_CFG);
+
+  const regions = Object.keys(DATA.child_share_by_region);
+  const vals = Object.values(DATA.child_share_by_region);
+  Plotly.newPlot("chartRegionChild", [{
+    x:regions, y:vals, type:"bar", marker:{color:COLORS.teal},
+  }], baseLayout({yaxis:{title:"Avg child share (%)", gridcolor:COLORS.grid}}), PLOTLY_CFG);
+}
+
+/* ================================================================
+   3. CONCENTRATION (pincode CV)
+   ================================================================ */
+function renderConcentration(){
+  const el = document.getElementById("panel-concentration");
+  const pv = DATA.pincode_variation;
+  el.innerHTML = `
+    <div class="section-head">
+      <span class="kicker">Exhibit 03 · District → Pincode Variation</span>
+      <h2>Is access spread evenly within a district, or concentrated in one pincode?</h2>
+      <p>Coefficient of variation (CV = std / mean) across pincodes within a district. Higher CV = more concentrated; national average CV is <b>${pv.national_avg_cv}</b>.</p>
+    </div>
+    <div class="pill-row" id="cvPills"></div>
+    <div class="chart-box"><div class="chart-title" id="cvChartTitle"></div><div id="chartCV" style="height:340px;"></div></div>
+    <div class="two-col">
+      <div class="exhibit"><h3><span class="tag" style="background:var(--seal)">CONCENTRATION RISK</span></h3>
+        <p style="font-size:14.5px; line-height:1.6;"><b>${pv.most_uneven.district} (${pv.most_uneven.state})</b> has the highest pincode CV nationally at <b>${pv.most_uneven.cv}</b> — well above the ${pv.national_avg_cv} average. Access there is concentrated in 1–2 pincodes; a strong candidate for an infrastructure-capacity audit.</p>
+      </div>
+      <div class="exhibit"><h3><span class="tag" style="background:var(--teal)">WELL DISTRIBUTED</span></h3>
+        <p style="font-size:14.5px; line-height:1.6;"><b>${pv.most_even.district} (${pv.most_even.state})</b> has the lowest CV nationally at <b>${pv.most_even.cv}</b> — transactions are spread evenly across its pincodes, a useful benchmark of what "healthy" distribution looks like.</p>
+      </div>
+    </div>
+  `;
+
+  const pillRow = document.getElementById("cvPills");
+  const options = [pv.most_uneven, ...pv.districts];
+  const seen = new Set();
+  const uniqueOptions = options.filter(o=>{
+    const k = o.district+o.state; if(seen.has(k)) return false; seen.add(k); return true;
+  });
+  uniqueOptions.forEach((d, i) => {
+    const pill = document.createElement("button");
+    pill.className = "pill" + (i===0 ? " active":"");
+    pill.textContent = `${d.label || "Profile"}: ${d.district}`;
+    pill.onclick = () => {
+      document.querySelectorAll("#cvPills .pill").forEach(p=>p.classList.remove("active"));
+      pill.classList.add("active");
+      drawCV(d);
+    };
+    pillRow.appendChild(pill);
+  });
+  drawCV(uniqueOptions[0]);
+
+  function drawCV(d){
+    document.getElementById("cvChartTitle").textContent = `${d.district} (${d.state}) — pincode-level spread · CV = ${d.cv}`;
+    const pins = d.pincodes || {};
+    const entries = Object.entries(pins).sort((a,b)=>b[1]-a[1]);
+    Plotly.newPlot("chartCV", [{
+      x: entries.map(e=>e[0]), y: entries.map(e=>e[1]), type:"bar",
+      marker:{color: d.cv > pv.national_avg_cv ? COLORS.seal : COLORS.teal},
+    }], baseLayout({xaxis:{title:"Pincode", type:"category", gridcolor:COLORS.grid}, yaxis:{title:"Transactions"}}), PLOTLY_CFG);
+  }
+}
+
+/* ================================================================
+   4. ANOMALIES (raw vs per-capita)
+   ================================================================ */
+function renderAnomalies(){
+  const el = document.getElementById("panel-anomalies");
+  const ad = DATA.anomaly_diagnosis;
+  const rows = (arr) => arr.map(d => `<tr><td>${d.district}</td><td>${d.state.replace(/\\b\\w/g,c=>c.toUpperCase())}</td><td>${d.total_biometric.toLocaleString()}</td><td>${d.per_1000_pop}</td></tr>`).join("");
+  el.innerHTML = `
+    <div class="section-head">
+      <span class="kicker">Exhibit 04 · Anomaly Diagnosis</span>
+      <h2>Raw counts vs. per-capita normalized — the ranking that actually matters</h2>
+      <p>Raw counts favor big-population districts by default. Normalizing by modeled district population (per 1,000 people) reveals which "anomalies" are real.</p>
+    </div>
+    <div class="pill-row">
+      <button class="pill active" data-view="top">Top 10 — High Usage</button>
+      <button class="pill" data-view="bottom">Bottom 10 — Low Usage</button>
+    </div>
+    <div class="two-col" id="anomalyTables"></div>
+    <div class="exhibit" style="margin-top:8px;">
+      <h3><span class="tag">DIAGNOSIS</span></h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+        <div>
+          <p style="font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-soft); font-family:'IBM Plex Mono',monospace; margin-bottom:8px;">Population-driven, not truly anomalous</p>
+          ${ad.dropped_after_normalizing.map(d=>`<span class="badge drop" style="display:inline-block; margin:2px 4px 2px 0;">${d}</span>`).join("") || "<span style='color:var(--text-soft); font-size:13px;'>None</span>"}
+        </div>
+        <div>
+          <p style="font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-soft); font-family:'IBM Plex Mono',monospace; margin-bottom:8px;">Small but genuinely high-intensity</p>
+          ${ad.newly_surfaced_after_normalizing.map(d=>`<span class="badge new" style="display:inline-block; margin:2px 4px 2px 0;">${d}</span>`).join("") || "<span style='color:var(--text-soft); font-size:13px;'>None</span>"}
+        </div>
+        <div>
+          <p style="font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-soft); font-family:'IBM Plex Mono',monospace; margin-bottom:8px;">Confirmed access gap (low on both views)</p>
+          ${ad.persistent_access_gap_districts.map(d=>`<span class="badge gap" style="display:inline-block; margin:2px 4px 2px 0;">${d}</span>`).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+
+  function draw(view){
+    const rawT = view === "top" ? ad.raw_top10 : ad.raw_bottom10;
+    const perT = view === "top" ? ad.percap_top10 : ad.percap_bottom10;
+    document.getElementById("anomalyTables").innerHTML = `
+      <div class="chart-box" style="padding:18px;">
+        <div class="chart-title">Ranked by RAW total transactions</div>
+        <table class="data-table"><thead><tr><th>District</th><th>State</th><th>Total Txns</th><th>Per-1000-Pop</th></tr></thead><tbody>${rows(rawT)}</tbody></table>
+      </div>
+      <div class="chart-box" style="padding:18px;">
+        <div class="chart-title">Ranked by PER-CAPITA (per 1,000 population)</div>
+        <table class="data-table"><thead><tr><th>District</th><th>State</th><th>Total Txns</th><th>Per-1000-Pop</th></tr></thead><tbody>${rows(perT)}</tbody></table>
+      </div>
+    `;
+  }
+  draw("top");
+  el.querySelectorAll(".pill").forEach(p=>{
+    p.onclick = () => { el.querySelectorAll(".pill").forEach(x=>x.classList.remove("active")); p.classList.add("active"); draw(p.dataset.view); };
+  });
+}
+
+/* ================================================================
+   5. FORECAST
+   ================================================================ */
+function renderForecast(){
+  const el = document.getElementById("panel-forecast");
+  const pa = DATA.predictive_analysis;
+  const states = Object.keys(pa.top5_state_forecasts);
+  el.innerHTML = `
+    <div class="section-head">
+      <span class="kicker">Exhibit 05 · Predictive Analysis</span>
+      <h2>Where demand is headed over the next quarter</h2>
+      <p>A linear trend per top state (capacity-planning view) and a Holt-Winters seasonal forecast nationally, with a 95% confidence band.</p>
+    </div>
+    <div class="chart-box"><div class="chart-title">National Total — Holt-Winters Seasonal Forecast (next 3 months)</div><div id="chartHW" style="height:380px;"></div></div>
+    <div class="pill-row" id="statePills"></div>
+    <div class="chart-box"><div class="chart-title" id="stateForecastTitle"></div><div id="chartStateForecast" style="height:340px;"></div></div>
+    <div class="exhibit">
+      <h3><span class="tag">BOTTOM-5 DISTRICT TREND</span> — recovering or declining further?</h3>
+      <table class="data-table"><thead><tr><th>District</th><th>Monthly Δ</th><th>Direction</th></tr></thead><tbody>
+        ${Object.entries(pa.bottom5_district_trend).map(([k,v])=>`<tr><td>${k}</td><td>${v.monthly_growth_rate}</td><td><span class="badge ${v.direction.includes('recover')?'new':'gap'}">${v.direction}</span></td></tr>`).join("")}
+      </tbody></table>
+    </div>
+  `;
+
+  const nf = pa.national_forecast_holtwinters;
+  Plotly.newPlot("chartHW", [
+    {x:nf.history_dates, y:nf.history_values, name:"Historical", type:"scatter", mode:"lines", line:{color:COLORS.ink}},
+    {x:nf.forecast_dates, y:nf.forecast_values, name:"Forecast", type:"scatter", mode:"lines+markers", line:{color:COLORS.amber, dash:"dash"}},
+    {x:[...nf.forecast_dates, ...[...nf.forecast_dates].reverse()],
+     y:[...nf.ci_upper, ...[...nf.ci_lower].reverse()],
+     fill:"toself", fillcolor:"rgba(217,142,63,0.15)", line:{color:"transparent"}, name:"95% CI", showlegend:true, type:"scatter"},
+  ], baseLayout({}), PLOTLY_CFG);
+
+  const statePillRow = document.getElementById("statePills");
+  states.forEach((s,i)=>{
+    const pill = document.createElement("button");
+    pill.className = "pill" + (i===0?" active":"");
+    pill.textContent = s.replace(/\\b\\w/g,c=>c.toUpperCase());
+    pill.onclick = () => { statePillRow.querySelectorAll(".pill").forEach(p=>p.classList.remove("active")); pill.classList.add("active"); drawState(s); };
+    statePillRow.appendChild(pill);
+  });
+  function drawState(s){
+    const f = pa.top5_state_forecasts[s];
+    document.getElementById("stateForecastTitle").textContent = `${s.replace(/\\b\\w/g,c=>c.toUpperCase())} — 3-month linear trend (${f.trend}, ${f.monthly_growth_rate>0?'+':''}${f.monthly_growth_rate}/month)`;
+    Plotly.newPlot("chartStateForecast", [
+      {x:f.history_dates, y:f.history_values, name:"Historical", type:"scatter", mode:"lines", line:{color:COLORS.ink}},
+      {x:f.forecast_dates, y:f.forecast_values, name:"Forecast", type:"scatter", mode:"lines+markers", line:{color: f.trend==='rising'?COLORS.teal:COLORS.seal, dash:"dash"}},
+    ], baseLayout({}), PLOTLY_CFG);
+  }
+  drawState(states[0]);
+}
+
+/* ================================================================
+   6. CORRELATION
+   ================================================================ */
+function renderCorrelation(){
+  const el = document.getElementById("panel-correlation");
+  const c = DATA.correlation;
+  el.innerHTML = `
+    <div class="section-head">
+      <span class="kicker">Exhibit 06 · External Validation</span>
+      <h2>Does literacy explain child biometric activity?</h2>
+      <p>Testing the observed "southern states show higher child-biometric share" pattern against real Census 2011 literacy rates.</p>
+    </div>
+    <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);">
+      <div class="stat-card teal"><div class="label">Pearson Correlation</div><div class="value">r = ${c.pearson_r_literacy_vs_child_share}</div><div class="foot">literacy rate vs. child biometric share</div></div>
+      <div class="stat-card"><div class="label">Statistical Significance</div><div class="value">p = ${c.p_value}</div><div class="foot">${c.p_value < 0.05 ? "statistically significant" : "not significant"}</div></div>
+    </div>
+    <div class="chart-box"><div class="chart-title">State Literacy Rate (Census 2011) vs. Avg Child (5–17) Biometric Share</div><div id="chartScatter" style="height:420px;"></div></div>
+  `;
+  Plotly.newPlot("chartScatter", [{
+    x:c.scatter.map(s=>s.literacy_rate_2011), y:c.scatter.map(s=>s.child_share_percent),
+    text:c.scatter.map(s=>s.state.replace(/\\b\\w/g,ch=>ch.toUpperCase())),
+    mode:"markers", type:"scatter", marker:{color:COLORS.amber, size:10, line:{color:COLORS.ink, width:1}},
+    hovertemplate:"%{text}<br>Literacy: %{x}%<br>Child share: %{y}%<extra></extra>",
+  }], baseLayout({xaxis:{title:"Literacy Rate 2011 (%)"}, yaxis:{title:"Child Biometric Share (%)"}}), PLOTLY_CFG);
+}
+
+/* ================================================================
+   7. RECOMMENDATIONS
+   ================================================================ */
+function renderRecommendations(){
+  const el = document.getElementById("panel-recommendations");
+  el.innerHTML = `
+    <div class="section-head">
+      <span class="kicker">Exhibit 07 · Solutions</span>
+      <h2>What UIDAI should do next</h2>
+      <p>Specific and operational — named districts, named states, tied directly to the findings above.</p>
+    </div>
+    <div class="rec-grid">
+      ${DATA.recommendations.map((r,i)=>`<div class="rec-card"><div class="idx">${String(i+1).padStart(2,"0")}</div><p>${r}</p></div>`).join("")}
+    </div>
+  `;
+}
+
+/* ================================================================
+   8. LIMITATIONS
+   ================================================================ */
+function renderLimitations(){
+  const el = document.getElementById("panel-limitations");
+  el.innerHTML = `
+    <div class="section-head">
+      <span class="kicker">Exhibit 08 · Scope &amp; Caveats</span>
+      <h2>What to keep in mind when reading these results</h2>
+      <p>Analytical maturity means naming the assumptions plainly.</p>
+    </div>
+    <ul class="limit-list">
+      ${DATA.limitations.map(l=>`<li>${l}</li>`).join("")}
+    </ul>
+  `;
+}
+
+const RENDERERS = {
+  overview: renderOverview,
+  trends: renderTrends,
+  concentration: renderConcentration,
+  anomalies: renderAnomalies,
+  forecast: renderForecast,
+  correlation: renderCorrelation,
+  recommendations: renderRecommendations,
+  limitations: renderLimitations,
+};
+
+showPanel("overview");
+</script>
+</body>
+</html>

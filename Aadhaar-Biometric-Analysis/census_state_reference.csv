@@ -1,0 +1,37 @@
+state,population_2011,literacy_rate_2011,india_region,region_type
+uttar pradesh,199812341,67.68,North,State
+maharashtra,112374333,82.34,West,State
+bihar,104099452,61.8,East,State
+west bengal,91276115,76.26,East,State
+andhra pradesh,49386799,67.35,South,State
+telangana,35193978,66.46,South,State
+madhya pradesh,72626809,69.32,Central,State
+tamil nadu,72147030,80.09,South,State
+rajasthan,68548437,66.11,North,State
+karnataka,61095297,75.36,South,State
+gujarat,60439692,78.03,West,State
+odisha,41974218,72.87,East,State
+kerala,33406061,93.91,South,State
+jharkhand,32988134,66.41,East,State
+assam,31205576,72.19,Northeast,State
+punjab,27743338,75.84,North,State
+chhattisgarh,25545198,70.28,Central,State
+haryana,25351462,75.55,North,State
+uttarakhand,10086292,78.82,North,State
+himachal pradesh,6864602,82.8,North,State
+tripura,3673917,87.22,Northeast,State
+meghalaya,2966889,74.43,Northeast,State
+manipur,2855794,76.94,Northeast,State
+nagaland,1978502,79.55,Northeast,State
+goa,1458545,88.7,West,State
+arunachal pradesh,1383727,65.38,Northeast,State
+mizoram,1097206,91.58,Northeast,State
+sikkim,610577,81.42,Northeast,State
+delhi,16787941,86.21,North,Union Territory
+jammu and kashmir,12541302,67.16,North,Union Territory
+puducherry,1247953,85.85,South,Union Territory
+chandigarh,1055450,86.05,North,Union Territory
+andaman and nicobar,380581,86.63,South,Union Territory
+dadra and nagar haveli and daman and diu,586956,82.4,West,Union Territory
+lakshadweep,64473,91.85,South,Union Territory
+ladakh,274000,71.0,North,Union Territory

@@ -1,0 +1,122 @@
+state,district,modeled_population,is_urban_hub,india_region,region_type,literacy_rate_2011
+uttar pradesh,Lucknow,21339216,True,North,State,67.68
+uttar pradesh,Kanpur Nagar,9607906,False,North,State,67.68
+uttar pradesh,Varanasi,15673801,False,North,State,67.68
+uttar pradesh,Agra,30125659,False,North,State,67.68
+uttar pradesh,Ghaziabad,16353875,False,North,State,67.68
+uttar pradesh,Prayagraj,30057797,False,North,State,67.68
+uttar pradesh,Gorakhpur,35077564,False,North,State,67.68
+uttar pradesh,Meerut,41576522,False,North,State,67.68
+maharashtra,Mumbai City,13352366,True,West,State,82.34
+maharashtra,Pune,20000060,False,West,State,82.34
+maharashtra,Nagpur,18096233,False,West,State,82.34
+maharashtra,Nashik,12136818,False,West,State,82.34
+maharashtra,Thane,3904162,False,West,State,82.34
+maharashtra,Aurangabad,31839897,False,West,State,82.34
+maharashtra,Solapur,13044796,False,West,State,82.34
+bihar,Patna,15679047,True,East,State,61.8
+bihar,Gaya,32688792,False,East,State,61.8
+bihar,Muzaffarpur,14761826,False,East,State,61.8
+bihar,Bhagalpur,15666798,False,East,State,61.8
+bihar,Darbhanga,12863354,False,East,State,61.8
+bihar,Purnia,12439635,False,East,State,61.8
+west bengal,Kolkata,9681014,True,East,State,76.26
+west bengal,Howrah,27307743,False,East,State,76.26
+west bengal,North 24 Parganas,3043823,False,East,State,76.26
+west bengal,Darjeeling,11079364,False,East,State,76.26
+west bengal,Malda,10304277,False,East,State,76.26
+west bengal,Bardhaman,29859895,False,East,State,76.26
+andhra pradesh,Visakhapatnam,11564509,True,South,State,67.35
+andhra pradesh,Vijayawada (NTR),5321907,False,South,State,67.35
+andhra pradesh,Guntur,15326145,False,South,State,67.35
+andhra pradesh,Tirupati,5039778,False,South,State,67.35
+andhra pradesh,Kurnool,12134460,False,South,State,67.35
+telangana,Hyderabad,15596121,True,South,State,66.46
+telangana,Rangareddy,7208849,False,South,State,66.46
+telangana,Warangal Urban,3294617,False,South,State,66.46
+telangana,Nizamabad,1719595,False,South,State,66.46
+telangana,Karimnagar,7374796,False,South,State,66.46
+madhya pradesh,Indore,13120459,True,Central,State,69.32
+madhya pradesh,Bhopal,31632365,False,Central,State,69.32
+madhya pradesh,Jabalpur,15937219,False,Central,State,69.32
+madhya pradesh,Gwalior,8174344,False,Central,State,69.32
+madhya pradesh,Ujjain,3762422,False,Central,State,69.32
+tamil nadu,Chennai,6577605,True,South,State,80.09
+tamil nadu,Coimbatore,17411454,False,South,State,80.09
+tamil nadu,Madurai,21206875,False,South,State,80.09
+tamil nadu,Salem,4962443,False,South,State,80.09
+tamil nadu,Tiruchirappalli,6197245,False,South,State,80.09
+tamil nadu,Erode,15791409,False,South,State,80.09
+rajasthan,Jaipur,18243082,True,North,State,66.11
+rajasthan,Jodhpur,6111034,False,North,State,66.11
+rajasthan,Udaipur,13014762,False,North,State,66.11
+rajasthan,Kota,6359348,False,North,State,66.11
+rajasthan,Ajmer,16120964,False,North,State,66.11
+rajasthan,Bikaner,8699248,False,North,State,66.11
+karnataka,Bengaluru Urban,8939882,True,South,State,75.36
+karnataka,Mysuru,17573090,False,South,State,75.36
+karnataka,Belagavi,11660785,False,South,State,75.36
+karnataka,Hubballi-Dharwad,17307001,False,South,State,75.36
+karnataka,Mangaluru (Dakshina Kannada),5614540,False,South,State,75.36
+gujarat,Ahmedabad,9019294,True,West,State,78.03
+gujarat,Surat,14798926,False,West,State,78.03
+gujarat,Vadodara,9671183,False,West,State,78.03
+gujarat,Rajkot,11904570,False,West,State,78.03
+gujarat,Bhavnagar,15045719,False,West,State,78.03
+odisha,Khordha (Bhubaneswar),5120744,True,East,State,72.87
+odisha,Cuttack,17988791,False,East,State,72.87
+odisha,Ganjam,4536151,False,East,State,72.87
+odisha,Sundargarh,7115512,False,East,State,72.87
+odisha,Balasore,7213022,False,East,State,72.87
+kerala,Ernakulam,6049274,True,South,State,93.91
+kerala,Thiruvananthapuram,4513982,False,South,State,93.91
+kerala,Kozhikode,9328674,False,South,State,93.91
+kerala,Thrissur,9671316,False,South,State,93.91
+kerala,Malappuram,3842815,False,South,State,93.91
+jharkhand,Ranchi,13506317,True,East,State,66.41
+jharkhand,Dhanbad,4974118,False,East,State,66.41
+jharkhand,Jamshedpur (East Singhbhum),7004726,False,East,State,66.41
+jharkhand,Bokaro,7502973,False,East,State,66.41
+assam,Kamrup Metropolitan,5582638,True,Northeast,State,72.19
+assam,Dibrugarh,7919971,False,Northeast,State,72.19
+assam,Jorhat,4438307,False,Northeast,State,72.19
+assam,Silchar (Cachar),13264659,False,Northeast,State,72.19
+punjab,Ludhiana,2630632,True,North,State,75.84
+punjab,Amritsar,12490645,False,North,State,75.84
+punjab,Jalandhar,4110123,False,North,State,75.84
+punjab,Patiala,8511938,False,North,State,75.84
+chhattisgarh,Raipur,10428111,True,Central,State,70.28
+chhattisgarh,Durg,4508406,False,Central,State,70.28
+chhattisgarh,Bilaspur,5320793,False,Central,State,70.28
+chhattisgarh,Bastar,5287887,False,Central,State,70.28
+haryana,Gurugram,4467671,True,North,State,75.55
+haryana,Faridabad,13787682,False,North,State,75.55
+haryana,Panipat,4343097,False,North,State,75.55
+haryana,Hisar,2753011,False,North,State,75.55
+uttarakhand,Dehradun,5302832,True,North,State,78.82
+uttarakhand,Haridwar,2119245,False,North,State,78.82
+uttarakhand,Nainital,2664215,False,North,State,78.82
+himachal pradesh,Shimla,4207326,True,North,State,82.8
+himachal pradesh,Kangra,1580742,False,North,State,82.8
+himachal pradesh,Mandi,1076534,False,North,State,82.8
+tripura,West Tripura (Agartala),3673917,True,Northeast,State,87.22
+meghalaya,East Khasi Hills (Shillong),2966889,True,Northeast,State,74.43
+manipur,Imphal West,2855794,True,Northeast,State,76.94
+nagaland,Kohima,1978502,True,Northeast,State,79.55
+goa,North Goa,990720,True,West,State,88.7
+goa,South Goa,467825,False,West,State,88.7
+arunachal pradesh,Papum Pare (Itanagar),1383727,True,Northeast,State,65.38
+mizoram,Aizawl,1097206,True,Northeast,State,91.58
+sikkim,East Sikkim (Gangtok),610577,True,Northeast,State,81.42
+delhi,New Delhi,3181691,True,North,Union Territory,86.21
+delhi,South Delhi,7352177,False,North,Union Territory,86.21
+delhi,North West Delhi,2493707,False,North,Union Territory,86.21
+delhi,East Delhi,3760366,False,North,Union Territory,86.21
+jammu and kashmir,Srinagar,4585184,True,North,Union Territory,67.16
+jammu and kashmir,Jammu,7956118,False,North,Union Territory,67.16
+puducherry,Puducherry,1247953,True,South,Union Territory,85.85
+chandigarh,Chandigarh,1055450,True,North,Union Territory,86.05
+andaman and nicobar,South Andaman,380581,True,South,Union Territory,86.63
+dadra and nagar haveli and daman and diu,Daman,586956,True,West,Union Territory,82.4
+lakshadweep,Kavaratti,64473,True,South,Union Territory,91.85
+ladakh,Leh,274000,True,North,Union Territory,71.0
